@@ -1,7 +1,7 @@
 package com.alura.literalura.principal;
 
 import com.alura.literalura.constants.Constantes;
-import com.alura.literalura.model.DatosLibroDTO;
+import com.alura.literalura.model.DTO.DatosLibroDTO;
 import com.alura.literalura.repository.AutorRepository;
 import com.alura.literalura.repository.LibroRepository;
 import com.alura.literalura.services.DataDeserializer;

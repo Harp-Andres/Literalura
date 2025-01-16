@@ -1,8 +1,8 @@
 package com.alura.literalura.services;
 
-import com.alura.literalura.model.AutorEntity;
-import com.alura.literalura.model.DatosLibroDTO;
-import com.alura.literalura.model.LibroEntity;
+import com.alura.literalura.model.Entity.AutorEntity;
+import com.alura.literalura.model.DTO.DatosLibroDTO;
+import com.alura.literalura.model.Entity.LibroEntity;
 import com.alura.literalura.repository.AutorRepository;
 import com.alura.literalura.repository.LibroRepository;
 

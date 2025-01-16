@@ -1,8 +1,8 @@
 package com.alura.literalura.services;
 
-import com.alura.literalura.model.AutorEntity;
-import com.alura.literalura.model.DatosLibroDTO;
-import com.alura.literalura.model.LibroEntity;
+import com.alura.literalura.model.Entity.AutorEntity;
+import com.alura.literalura.model.DTO.DatosLibroDTO;
+import com.alura.literalura.model.Entity.LibroEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package com.alura.literalura.model;
+package com.alura.literalura.model.DTO;
 
 import com.google.gson.annotations.SerializedName;
 

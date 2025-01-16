@@ -2,7 +2,7 @@ package com.alura.literalura.repository;
 
 
 
-import com.alura.literalura.model.AutorEntity;
+import com.alura.literalura.model.Entity.AutorEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

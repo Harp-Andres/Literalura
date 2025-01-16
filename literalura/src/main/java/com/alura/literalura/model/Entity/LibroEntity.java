@@ -1,6 +1,7 @@
-package com.alura.literalura.model;
+package com.alura.literalura.model.Entity;
 
 
+import com.alura.literalura.model.DTO.ResultadosLibroDTO;
 import jakarta.persistence.*;
 
 @Entity

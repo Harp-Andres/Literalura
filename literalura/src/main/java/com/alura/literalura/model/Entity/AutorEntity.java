@@ -1,4 +1,4 @@
-package com.alura.literalura.model;
+package com.alura.literalura.model.Entity;
 
 import jakarta.persistence.*;
 
