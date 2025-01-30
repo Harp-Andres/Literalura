@@ -14,7 +14,9 @@ public class AutorEntity {
     private Long id;
     @Column(nullable = false, unique = true)
     private String nombre;
+    @Column(name = "anio_nacimiento")
     private int anioNacimiento;
+    @Column(name = "anio_muerte")
     private int anioMuerte;
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<LibroEntity> libro = new ArrayList<>();
@@ -94,6 +96,8 @@ public class AutorEntity {
                 ", libro=" + libro +
                 '}';
     }
+
+
 }
 
 

@@ -53,6 +53,7 @@ public class Principal {
         agregarOpcion(menuOpciones, 3, "Listar autores registrados en base de datos");
         agregarOpcion(menuOpciones, 4, "Listar autores vivos hasta un determinado año registrados en base de datos");
         agregarOpcion(menuOpciones, 5, "Listar libros por idioma registrados en base de datos");
+        agregarOpcion(menuOpciones, 6, "Listar libros por titulo de libro registrado en base de datos");
         agregarOpcion(menuOpciones, 0, "Salir del programa");
         System.out.println("-------------------------------------------------------------------------------\n");
         System.out.println("Bienvenido a Literalura una aplicacion de consola de literatura!!!");
@@ -92,21 +93,57 @@ public class Principal {
                         } catch (RuntimeException e) {
                             System.err.println("Error durante la solicitud: " + e.getMessage());
                         }
-
-
                         System.out.println("Operacion terminada.");
                         break;
                     case 2:
-                        System.out.println("Ha seleccionado la Opción 2.");
+                        System.out.println("Lista de todos los libros registrados en base de datos");
+                        libroRepository.findAll()
+                                .forEach(
+                                        libro -> System.out.printf("Título: %s, Lenguaje: %s, Descargas: %d%n",
+                                                libro.getTituloLibro(),
+                                                libro.getLenguaje(),
+                                                libro.getNumeroDescargas()));
                         break;
                     case 3:
-                        System.out.println("Ha seleccionado la Opción 3.");
+                        System.out.println("Lista de todos los autores registrados en base de datos");
+                        autorRepository.findAll()
+                                .forEach(
+                                        autor -> System.out.printf("Nombre: %s, Año de nacimiento: %s, Año de su muerte: %d%n",
+                                                autor.getNombre(),
+                                                autor.getAnioNacimiento(),
+                                                autor.getAnioMuerte()));
                         break;
                     case 4:
-                        System.out.println("Ha seleccionado la Opción 4.");
+                        System.out.println("Ingrese el año especifico para informa sobre los autores vivos hasta ese año");
+                        entradaTecladoInt = teclado.nextInt();
+                        autorRepository.findByAnioMuerteLessThan(entradaTecladoInt).
+                                forEach(autor -> System.out.printf("Nombre: %s, Año de nacimiento: %s, Año de su muerte: %d%n",
+                                        autor.getNombre(),
+                                        autor.getAnioNacimiento(),
+                                        autor.getAnioMuerte()));
                         break;
                     case 5:
-                        System.out.println("Ha seleccionado la Opción 5.");
+                        System.out.println("Ingrese la abreviatura del idioma, tenga en cuenta que solo son 2 letras");
+                        teclado.nextLine(); // Limpiar el buffer de entrada
+                        entradaTecladoString = teclado.nextLine();
+                        libroRepository.findByLenguaje(entradaTecladoString)
+                                .forEach(libro -> System.out.printf("Título: %s, Lenguaje: %s, Descargas: %d%n",
+                                        libro.getTituloLibro(),
+                                        libro.getLenguaje(),
+                                        libro.getNumeroDescargas()));
+                        break;
+                    case 6:
+                        System.out.println("Ingrese el nombre del libro a buscar en la base de datos");
+                        teclado.nextLine(); // Limpiar el buffer de entrada
+                        entradaTecladoString = teclado.nextLine();
+                        libroRepository.findByTituloLibroIgnoreCase(entradaTecladoString)
+                                .ifPresentOrElse(
+                                        libro -> System.out.printf("Título: %s, Lenguaje: %s, Descargas: %d%n",
+                                                libro.getTituloLibro(),
+                                                libro.getLenguaje(),
+                                                libro.getNumeroDescargas()),
+                                        () -> System.out.println("❌ No se encontró el libro en la base de datos.")
+                                );
                         break;
                     case 0:
                         System.out.println("Saliendo del programa...");

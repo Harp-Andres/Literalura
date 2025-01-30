@@ -7,9 +7,10 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "libros")
 public class LibroEntity {
-
+    @Column(name = "titulo_libro")
     String tituloLibro;
     String lenguaje;
+    @Column(name = "numero_descargas")
     int numeroDescargas;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -79,4 +80,6 @@ public class LibroEntity {
                         ", numeroDescargas=" + numeroDescargas +
                         ", autor=" + autor;
     }
+
+
 }

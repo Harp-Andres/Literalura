@@ -24,7 +24,7 @@ public class AsignarRelaciones {
             System.out.println("Imprimiendo entidad libro: " + libro);
             // Buscar o crear autores y establecer relaciones
             resultadosLibro.autores().forEach(autor -> {
-                AutorEntity autorEntity = autorRepository.findByNombre(autor.nombre())
+                AutorEntity autorEntity = autorRepository.findByNombreIgnoreCase(autor.nombre())
                         .orElseGet(() -> {
                             AutorEntity nuevoAutor = new AutorEntity(autor.nombre(), autor.anioNacimiento(), autor.anioMuerte());
                             autorRepository.save(nuevoAutor); // Persistir nuevo autor
