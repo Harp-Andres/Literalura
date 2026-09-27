@@ -6,39 +6,42 @@ import com.alura.literalura.model.Entity.LibroEntity;
 import com.alura.literalura.repository.AutorRepository;
 import com.alura.literalura.repository.LibroRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-
 @Service
 public class ServiceGuardarEntity {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceGuardarEntity.class);
+
     private final AutorRepository autorRepository;
     private final LibroRepository libroRepository;
-    private final DataToEntityMapper dataToEntityMapper = new DataToEntityMapper();// Mapper para convertir DTO a entidades
+    private final DataToEntityMapper dataToEntityMapper;
+    private final AsignarRelaciones asignarRelaciones;
 
-    public ServiceGuardarEntity(AutorRepository autorRepository, LibroRepository libroRepository) {
+    public ServiceGuardarEntity(
+            AutorRepository autorRepository,
+            LibroRepository libroRepository,
+            DataToEntityMapper dataToEntityMapper,
+            AsignarRelaciones asignarRelaciones) {
         this.autorRepository = autorRepository;
         this.libroRepository = libroRepository;
+        this.dataToEntityMapper = dataToEntityMapper;
+        this.asignarRelaciones = asignarRelaciones;
     }
-
 
     @Transactional
     public void guardarAutoresYLibros(DatosLibroDTO datosLibroDTO) {
-        AsignarRelaciones asignarRelaciones = new AsignarRelaciones(autorRepository, libroRepository);  // Asignar relaciones entre entidades
-
-        // Convertir los datos a entidades
         List<AutorEntity> autores = dataToEntityMapper.convertirAAutorEntity(datosLibroDTO);
         List<LibroEntity> libros = dataToEntityMapper.convertirALibroEntity(datosLibroDTO);
-        System.out.println("Imprimir lista de autores: " + autores);
-        System.out.println("Imprimir lista de libros: " + libros);
-        // Asignar relaciones entre autores y libros
+        LOG.info("Persistiendo {} autores y {} libros", autores.size(), libros.size());
+
         asignarRelaciones.asignarRelacionesAutoresYLibros(datosLibroDTO);
 
-        //Guardar los autores y libros
         autorRepository.saveAll(autores);
         libroRepository.saveAll(libros);
     }
 }
-

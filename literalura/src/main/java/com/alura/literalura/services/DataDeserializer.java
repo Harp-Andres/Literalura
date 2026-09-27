@@ -4,7 +4,9 @@ import com.alura.literalura.exceptions.DeserializationException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DataDeserializer implements IConvierteDatos {
 
     private final Gson gson = new GsonBuilder().create();
@@ -12,12 +14,9 @@ public class DataDeserializer implements IConvierteDatos {
     @Override
     public <T> T obtenerDatos(String json, Class<T> clase) {
         try {
-            // Deserialización
             return gson.fromJson(json, clase);
         } catch (JsonSyntaxException | IllegalStateException e) {
             throw new DeserializationException("Error al deserializar el JSON: " + e.getMessage(), e);
         }
     }
-
-
 }
