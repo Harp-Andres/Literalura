@@ -56,4 +56,21 @@ class RepositorioCatalogoDatabaseTest extends PostgresIntegrationSupport {
         assertThatThrownBy(() -> libros.guardar(new Libro(null, "Frankenstein", "en", 11, autor)))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
+
+    @Test
+    void elTituloEsUnicoSinImportarMayusculas() {
+        Autor autor = autores.guardar(new Autor(null, "Shelley", 1797, 1851));
+        libros.guardar(new Libro(null, "Frankenstein", "en", 10, autor));
+
+        assertThatThrownBy(() -> libros.guardar(new Libro(null, "frankenstein", "en", 11, autor)))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void elNombreDelAutorEsUnicoSinImportarMayusculas() {
+        autores.guardar(new Autor(null, "Shelley", 1797, 1851));
+
+        assertThatThrownBy(() -> autores.guardar(new Autor(null, "SHELLEY", 1797, 1851)))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
 }
