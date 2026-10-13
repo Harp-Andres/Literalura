@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Literalura</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<main>
+    <header>
+        <p class="kicker">Catalogo local</p>
+        <h1>Literalura</h1>
+        <p>Busca un titulo en Gutendex, guardalo y consulta autores y libros ya registrados.</p>
+    </header>
+
+    <section class="panel">
+        <h2>Importar</h2>
+        <form id="form-importar">
+            <label for="titulo">Titulo</label>
+            <div class="fila">
+                <input id="titulo" name="titulo" type="text" maxlength="500" required placeholder="Frankenstein">
+                <button type="submit">Buscar y guardar</button>
+            </div>
+        </form>
+        <p id="estado" role="status"></p>
+    </section>
+
+    <section class="panel">
+        <h2>Libros</h2>
+        <form id="form-idioma" class="fila">
+            <label for="idioma">Idioma</label>
+            <input id="idioma" name="idioma" type="text" maxlength="2" placeholder="es">
+            <button type="submit">Filtrar</button>
+            <button type="button" id="ver-libros">Ver todos</button>
+        </form>
+        <ul id="libros"></ul>
+    </section>
+
+    <section class="panel">
+        <h2>Autores</h2>
+        <form id="form-anio" class="fila">
+            <label for="anio">Vivos en</label>
+            <input id="anio" name="anio" type="number" placeholder="1818">
+            <button type="submit">Filtrar</button>
+            <button type="button" id="ver-autores">Ver todos</button>
+        </form>
+        <ul id="autores"></ul>
+    </section>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>

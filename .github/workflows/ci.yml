@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: unit
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: literalura
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: literalura/pom.xml
+      - run: chmod +x mvnw && ./mvnw -B test
+
+  database:
+    name: database
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: literalura
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: literalura/pom.xml
+      - run: chmod +x mvnw && ./mvnw -B test -Pdatabase
+
+  integration:
+    name: integration
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: literalura
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: literalura/pom.xml
+      - run: chmod +x mvnw && ./mvnw -B test -Pintegration
+
+  e2e:
+    name: e2e
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: literalura/pom.xml
+      - name: Empaquetar la aplicacion
+        working-directory: literalura
+        run: chmod +x mvnw && ./mvnw -B -DskipTests package
+      - name: Levantar base, WireMock y aplicacion
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up --build -d --wait
+      - name: Esperar a WireMock
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8089/__admin/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml logs wiremock
+          exit 1
+      - name: Pruebas de extremo a extremo
+        working-directory: literalura
+        run: chmod +x mvnw && ./mvnw -B test -Pe2e
+      - name: Logs del sistema
+        if: failure()
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml logs
+      - name: Bajar el sistema
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
+
+  pages:
+    name: pages
+    needs: [unit, database, integration, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

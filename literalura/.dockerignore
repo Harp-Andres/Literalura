@@ -1,0 +1,6 @@
+.git
+.idea
+*.iml
+src/test
+target/*
+!target/literalura.jar
