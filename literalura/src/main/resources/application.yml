@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: literalura
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/literalura}
+    username: ${DB_USERNAME:literalura}
+    password: ${DB_PASSWORD:literalura}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+literalura:
+  gutendex:
+    base-url: ${GUTENDEX_BASE_URL:https://gutendex.com/books}
+
+logging:
+  level:
+    root: INFO
+    com.alura.literalura: INFO

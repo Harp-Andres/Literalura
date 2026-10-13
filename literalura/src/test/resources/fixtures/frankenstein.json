@@ -1,0 +1,17 @@
+{
+  "count": 1,
+  "results": [
+    {
+      "title": "Frankenstein; Or, The Modern Prometheus",
+      "authors": [
+        {
+          "name": "Shelley, Mary Wollstonecraft",
+          "birth_year": 1797,
+          "death_year": 1851
+        }
+      ],
+      "languages": ["en"],
+      "download_count": 15000
+    }
+  ]
+}

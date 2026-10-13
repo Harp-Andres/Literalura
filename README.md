@@ -1,58 +1,78 @@
-# Literalura — Spring Boot API client + JPA demo
+# Literalura
 
-Console application that consumes the public [Gutendex](https://gutendex.com/) books API, maps JSON into DTOs, and persists authors and books with **Spring Data JPA** and **PostgreSQL** (H2 in tests).
+Catalogo de libros con una arquitectura hexagonal: el dominio y los casos de uso no conocen Spring, JPA ni HTTP. PostgreSQL, Gutendex y la interfaz (web o consola) son adaptadores.
+
+## Arquitectura
+
+```
+domain/            modelo, reglas y puertos
+application/       casos de uso
+infrastructure/    JPA, Flyway, cliente Gutendex
+adapter/web        API y pagina
+adapter/console    menu, solo con el perfil cli
+```
+
+La regla de "autor vivo en un año" vive en `Autor`. La persistencia solo guarda y recupera.
 
 ## Stack
 
 - Java 21
-- Spring Boot 3.4
-- `java.net.http` client + Gson
-- PostgreSQL (runtime) / H2 (tests)
-- SLF4J logging (no `System.out` in domain or services)
+- Spring Boot 3.5
+- PostgreSQL 16 y Flyway
+- Jackson
+- Docker Compose
 
-## Layout
+## Pruebas
 
-```
-literalura/
-  src/main/java/com/alura/literalura/
-    console/     # Console UI adapter (CommandLineRunner, presenter)
-    service/     # Application services (catalog, Gutendex import)
-    services/    # HTTP, mapping, persistence orchestration
-    model/       # JPA entities + Gson DTOs
-    repository/  # Spring Data repositories
-```
+Cada tipo corre aparte. `./mvnw test` ejecuta solo las unitarias y no necesita Docker.
 
-The interactive menu lives in `ConsoleMenuRunner` (`@Profile("!test")`). Business rules sit in `*CatalogService` and `GutendexImportService`.
+| Tipo | Comando | Que cubre |
+| --- | --- | --- |
+| Unitarias | `./mvnw test` | Dominio, casos de uso, mapeo y arquitectura |
+| Base de datos | `./mvnw test -Pdatabase` | Repositorios contra PostgreSQL real con Testcontainers |
+| Integracion | `./mvnw test -Pintegration` | API, caso de uso, PostgreSQL y Gutendex simulado con WireMock |
+| Extremo a extremo | ver abajo | El mismo Compose que en local, en caja negra |
 
-## Configuration
+Para base de datos e integracion se usa Testcontainers, que es la opcion habitual en Java frente a Robot Framework: levanta PostgreSQL de verdad y no agrega otro lenguaje al pipeline.
 
-Set database credentials via environment variables (do not commit secrets):
+## Ejecutar en local
 
-```properties
-spring.datasource.username=${LOGIN_USERNAME}
-spring.datasource.password=${LOGIN_PASSWORD}
-```
-
-Default JDBC URL targets local PostgreSQL database `literalura`.
-
-## Run
+Requiere Docker.
 
 ```bash
 cd literalura
-./mvnw test          # unit + context tests (H2)
-./mvnw spring-boot:run
+./mvnw -DskipTests package
+cd ..
+docker compose up --build
 ```
 
-## Tests
+La pagina queda en `http://localhost:8080`.
 
-- `DataDeserializerTest`, `DataToEntityMapperTest` — pure mapping
-- `LibroCatalogServiceTest`, `GutendexImportServiceTest` — Mockito
-- `LiteraluraApplicationTests` — Spring context (`test` profile)
+La consola interactiva usa el perfil `cli` y una base ya levantada:
 
-## Suggested GitHub repository name
+```bash
+cd literalura
+./mvnw spring-boot:run -Dspring-boot.run.profiles=cli
+```
 
-`demo-spring-boot-gutendex-jpa`
+Variables: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `GUTENDEX_BASE_URL`.
 
-## License
+## Extremo a extremo
 
-MIT
+Sustituye Gutendex por WireMock para que el resultado no dependa de la red.
+
+```bash
+cd literalura
+./mvnw -DskipTests package
+cd ..
+docker compose -f docker-compose.yml -f docker-compose.ci.yml up --build -d --wait
+cd literalura
+./mvnw test -Pe2e
+docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
+```
+
+## Integracion continua
+
+En cada push hay cuatro checks: `unit`, `database`, `integration` y `e2e`. El job `e2e` levanta la aplicacion, PostgreSQL y WireMock. GitHub Pages se publica solo en `main`, y solo si esos cuatro checks pasaron.
+
+Para que un pull request hacia `main` no se pueda mezclar con checks en rojo, el repositorio debe exigir `unit`, `database`, `integration` y `e2e` como status checks obligatorios.

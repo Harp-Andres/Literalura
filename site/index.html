@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Literalura</title>
+    <style>
+        :root { color-scheme: light; --paper: #f4efe4; --ink: #1d2430; --accent: #1f6b4a; --line: #d7cbb8; }
+        body { margin: 0; font-family: "Segoe UI", sans-serif; background: var(--paper); color: var(--ink); }
+        main { max-width: 760px; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+        h1, h2 { font-family: Georgia, serif; }
+        a { color: var(--accent); }
+        code { background: #fffaf2; border: 1px solid var(--line); border-radius: 6px; padding: 0.1rem 0.35rem; }
+        .kicker { letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.75rem; color: var(--accent); }
+    </style>
+</head>
+<body>
+<main>
+    <p class="kicker">Catalogo de libros</p>
+    <h1>Literalura</h1>
+    <p>Aplicacion de catalogo que consulta Gutendex y guarda autores y libros en PostgreSQL. El dominio no depende de Spring ni de la base de datos.</p>
+    <h2>Como se ejecuta</h2>
+    <p>El sistema completo —aplicacion, PostgreSQL y, en integracion continua, un sustituto de Gutendex— se levanta con Docker Compose. GitHub Pages solo publica esta pagina y no ejecuta la API.</p>
+    <p>La publicacion ocurre unicamente despues de un push a <code>main</code> con las pruebas unitarias, de base de datos, de integracion y de extremo a extremo en verde. El resto de ramas solo se prueba.</p>
+    <p><a href="https://github.com/Harp-Andres/Literalura">Codigo en GitHub</a></p>
+</main>
+</body>
+</html>

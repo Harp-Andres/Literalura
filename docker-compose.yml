@@ -1,0 +1,41 @@
+name: literalura
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: literalura
+      POSTGRES_USER: literalura
+      POSTGRES_PASSWORD: literalura
+    ports:
+      - "5432:5432"
+    volumes:
+      - literalura-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U literalura -d literalura"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build:
+      context: ./literalura
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/literalura
+      DB_USERNAME: literalura
+      DB_PASSWORD: literalura
+      GUTENDEX_BASE_URL: ${GUTENDEX_BASE_URL:-https://gutendex.com/books}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+volumes:
+  literalura-postgres:
