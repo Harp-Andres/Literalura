@@ -154,7 +154,7 @@ Hay dos workflows: CI prueba y CD publica. CD nunca vuelve a correr las pruebas;
 | `verificar` | Decide que commit se despliega. Si viene de CI, toma el commit que CI probo; si se lanzo a mano, toma la punta de `main` y falla si ese commit no tiene una ejecucion exitosa de CI |
 | `pages` | Hace checkout de ese commit, repite la verificacion de `site/` y lo publica en GitHub Pages (entorno `github-pages`) |
 
-`verificar` solo deja pasar una ejecucion de CI que termino en exito, que fue disparada por un push a `main` y que viene de este repositorio. Una ejecucion fallida o cancelada, o una de otra rama o de un pull request, no despliega nada. Los despliegues nuevos se encolan detras del que este en curso, nunca lo interrumpen.
+`verificar` solo deja pasar una ejecucion de CI que termino en exito, que fue disparada por un push a `main` y que viene de este repositorio. Una ejecucion fallida o cancelada, o una de otra rama o de un pull request, no despliega nada. `pages` tiene su propia cola de concurrencia: un despliegue nuevo espera al que esta en curso sin interrumpirlo, y una ejecucion que `verificar` descarto no entra a la cola.
 
 ### Del pull request al sitio
 

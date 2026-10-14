@@ -7,10 +7,6 @@ on:
     branches: [main]
   workflow_dispatch:
 
-concurrency:
-  group: cd-${{ github.workflow }}
-  cancel-in-progress: false
-
 permissions:
   contents: read
 
@@ -55,6 +51,11 @@ jobs:
     name: pages
     needs: verificar
     runs-on: ubuntu-latest
+    # A nivel de job: una ejecucion de CD cuyo verificar se omitio (CI fallido
+    # o cancelado) no entra a la cola ni reemplaza un despliegue pendiente.
+    concurrency:
+      group: cd-pages
+      cancel-in-progress: false
     permissions:
       contents: read
       pages: write
