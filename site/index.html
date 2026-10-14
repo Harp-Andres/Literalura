@@ -3,26 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Literalura</title>
-    <style>
-        :root { color-scheme: light; --paper: #f4efe4; --ink: #1d2430; --accent: #1f6b4a; --line: #d7cbb8; }
-        body { margin: 0; font-family: "Segoe UI", sans-serif; background: var(--paper); color: var(--ink); }
-        main { max-width: 760px; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
-        h1, h2 { font-family: Georgia, serif; }
-        a { color: var(--accent); }
-        code { background: #fffaf2; border: 1px solid var(--line); border-radius: 6px; padding: 0.1rem 0.35rem; }
-        .kicker { letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.75rem; color: var(--accent); }
-    </style>
+    <title>Literalura · Demo en el navegador</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./src/main.js"></script>
 </head>
 <body>
 <main>
-    <p class="kicker">Catalogo de libros</p>
-    <h1>Literalura</h1>
-    <p>Aplicacion de catalogo que consulta Gutendex y guarda autores y libros en PostgreSQL. El dominio no depende de Spring ni de la base de datos.</p>
-    <h2>Como se ejecuta</h2>
-    <p>El sistema completo —aplicacion, PostgreSQL y, en integracion continua, un sustituto de Gutendex— se levanta con Docker Compose. GitHub Pages solo publica esta pagina y no ejecuta la API.</p>
-    <p>La publicacion ocurre unicamente despues de un push a <code>main</code> con las pruebas unitarias, de base de datos, de integracion y de extremo a extremo en verde. El resto de ramas solo se prueba.</p>
-    <p><a href="https://github.com/Harp-Andres/Literalura">Codigo en GitHub</a></p>
+    <header>
+        <p class="kicker">Catálogo de libros</p>
+        <h1>Literalura</h1>
+        <p>Busca un título en Gutendex, guárdalo y consulta los libros y autores registrados.</p>
+        <p class="nota">
+            Esta es una demo que funciona solo en tu navegador: consulta Gutendex directamente y guarda el catálogo
+            en el almacenamiento local de este navegador, así que nadie más ve tus datos.
+            El sistema completo, con Spring Boot, PostgreSQL y Docker Compose, está en el
+            <a href="https://github.com/Harp-Andres/Literalura">repositorio en GitHub</a>.
+        </p>
+        <noscript><p class="estado error">Esta demo necesita JavaScript.</p></noscript>
+    </header>
+
+    <section class="panel" aria-labelledby="titulo-importar">
+        <h2 id="titulo-importar">Importar</h2>
+        <form id="form-importar">
+            <label for="titulo">Título</label>
+            <div class="fila">
+                <input id="titulo" name="titulo" type="text" maxlength="500" required placeholder="Frankenstein">
+                <button type="submit">Buscar y guardar</button>
+            </div>
+        </form>
+        <p id="estado-importacion" class="estado" role="status"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="titulo-libros">
+        <h2 id="titulo-libros">Libros</h2>
+        <form id="form-idioma" class="fila">
+            <label for="idioma">Idioma</label>
+            <input id="idioma" name="idioma" type="text" maxlength="2" placeholder="es" autocomplete="off">
+            <button type="submit">Filtrar</button>
+            <button type="button" id="ver-libros">Ver todos</button>
+        </form>
+        <form id="form-titulo" class="fila">
+            <label for="buscar-titulo">Título exacto</label>
+            <input id="buscar-titulo" name="titulo" type="text" maxlength="500" placeholder="Frankenstein; Or, The Modern Prometheus">
+            <button type="submit">Buscar</button>
+        </form>
+        <p id="estado-libros" class="estado" role="status"></p>
+        <ul id="libros" aria-label="Libros"></ul>
+    </section>
+
+    <section class="panel" aria-labelledby="titulo-autores">
+        <h2 id="titulo-autores">Autores</h2>
+        <form id="form-anio" class="fila">
+            <label for="anio">Vivos en</label>
+            <input id="anio" name="anio" type="number" step="1" placeholder="1818">
+            <button type="submit">Filtrar</button>
+            <button type="button" id="ver-autores">Ver todos</button>
+        </form>
+        <p id="estado-autores" class="estado" role="status"></p>
+        <ul id="autores" aria-label="Autores"></ul>
+    </section>
+
+    <section class="panel" aria-labelledby="titulo-datos">
+        <h2 id="titulo-datos">Datos locales</h2>
+        <p>Elimina los libros y autores que esta demo guardó en tu navegador.</p>
+        <button type="button" id="borrar-datos" class="peligro">Borrar datos locales</button>
+        <p id="estado-datos" class="estado" role="status"></p>
+    </section>
 </main>
 </body>
 </html>
