@@ -1,0 +1,77 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: verificar
+    if: >-
+      (github.event_name == 'workflow_run'
+        && github.event.workflow_run.conclusion == 'success'
+        && github.event.workflow_run.event == 'push'
+        && github.event.workflow_run.head_branch == 'main'
+        && github.event.workflow_run.head_repository.full_name == github.repository)
+      || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - name: Resolver el commit de main que paso CI
+        id: commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_run ]; then
+            sha="$RUN_SHA"
+          else
+            sha="$GITHUB_SHA"
+            exitosas=$(gh api -X GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
+              -f head_sha="$sha" -f branch=main -f event=push -f status=success \
+              --jq '.total_count')
+            if [ "$exitosas" -eq 0 ]; then
+              echo "::error::CI no tiene una ejecucion exitosa en main para $sha"
+              exit 1
+            fi
+          fi
+          echo "Se despliega $sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+  pages:
+    name: pages
+    needs: verificar
+    runs-on: ubuntu-latest
+    # A nivel de job: una ejecucion de CD cuyo verificar se omitio (CI fallido
+    # o cancelado) no entra a la cola ni reemplaza un despliegue pendiente.
+    concurrency:
+      group: cd-pages
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.verificar.outputs.sha }}
+      - name: Verificar que site solo tiene archivos publicables
+        run: bash .github/scripts/verificar-site.sh site
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -129,9 +129,13 @@ npm test                               # unitarias y Playwright
 npm run servir                         # http://127.0.0.1:4173/Literalura/
 ```
 
-## Integracion continua
+## Integracion y despliegue continuos
 
-El workflow `.github/workflows/ci.yml` corre en cada push a cualquier rama y en cada pull request. Un push nuevo a la misma rama cancela la ejecucion anterior.
+Hay dos workflows: CI prueba y CD publica. CD nunca vuelve a correr las pruebas; solo despliega un commit de `main` que ya paso CI.
+
+### CI
+
+`.github/workflows/ci.yml` corre en cada pull request, en cada push a `main` (es decir, al mezclar) y a mano desde la pestaña Actions. Un push nuevo a la misma rama o al mismo pull request cancela la ejecucion anterior.
 
 | Job | Que hace |
 | --- | --- |
@@ -139,10 +143,27 @@ El workflow `.github/workflows/ci.yml` corre en cada push a cualquier rama y en 
 | `database` | Pruebas contra PostgreSQL con Testcontainers |
 | `integration` | API con PostgreSQL y WireMock |
 | `e2e` | Empaqueta la aplicacion, levanta PostgreSQL, WireMock y la aplicacion con Compose y la prueba en caja negra |
-| `site` | Pruebas unitarias y de Playwright de la demo; verifica que `site/` solo tenga `.html`, `.css` y `.js`, y sube el reporte de Playwright si algo falla |
-| `pages` | Publica `site/` en GitHub Pages |
+| `site` | Pruebas unitarias y de Playwright de la demo; verifica con `.github/scripts/verificar-site.sh` que `site/` solo tenga `.html`, `.css` y `.js`, y sube el reporte de Playwright si algo falla |
 
-`pages` solo corre en un push a `main` y solo si los otros cinco jobs pasaron. En las demas ramas y en los pull requests corren los cinco checks, pero no se publica nada.
+### CD
+
+`.github/workflows/cd.yml` se dispara con `workflow_run` cuando termina CI. Tambien se puede lanzar a mano sobre `main` para volver a publicar.
+
+| Job | Que hace |
+| --- | --- |
+| `verificar` | Decide que commit se despliega. Si viene de CI, toma el commit que CI probo; si se lanzo a mano, toma la punta de `main` y falla si ese commit no tiene una ejecucion exitosa de CI |
+| `pages` | Hace checkout de ese commit, repite la verificacion de `site/` y lo publica en GitHub Pages (entorno `github-pages`) |
+
+`verificar` solo deja pasar una ejecucion de CI que termino en exito, que fue disparada por un push a `main` y que viene de este repositorio. Una ejecucion fallida o cancelada, o una de otra rama o de un pull request, no despliega nada. `pages` tiene su propia cola de concurrencia: un despliegue nuevo espera al que esta en curso sin interrumpirlo, y una ejecucion que `verificar` descarto no entra a la cola.
+
+### Del pull request al sitio
+
+1. Se abre un pull request: corre CI una vez y aparecen los cinco checks. CD no corre.
+2. Con los cinco checks en verde y los hilos de revision resueltos, se mezcla en `main`.
+3. El push a `main` vuelve a correr CI sobre el commit mezclado.
+4. Si CI pasa, CD publica ese mismo commit en [harp-andres.github.io/Literalura](https://harp-andres.github.io/Literalura/). Si falla, el sitio queda como estaba.
+
+GitHub solo ejecuta los workflows con `workflow_run` desde la rama por defecto, asi que un cambio en `cd.yml` solo se puede probar despues de mezclarlo.
 
 La rama `main` esta protegida:
 
@@ -151,4 +172,4 @@ La rama `main` esta protegida:
 - Todos los hilos de revision deben quedar resueltos antes de mezclar.
 - No se puede borrar la rama ni hacer force push.
 
-Un pull request con algun check en rojo no se puede mezclar, y como Pages solo se publica desde `main` despues de que pasen los cinco checks, ese cambio tampoco llega al sitio.
+Un pull request con algun check en rojo no se puede mezclar, y como CD solo publica commits de `main` que pasaron CI, ese cambio tampoco llega al sitio.
