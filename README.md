@@ -71,8 +71,31 @@ cd literalura
 docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
 ```
 
+## Demo en GitHub Pages
+
+[harp-andres.github.io/Literalura](https://harp-andres.github.io/Literalura/) publica una version del catalogo que corre entera en el navegador, sin Spring Boot ni PostgreSQL. Consulta Gutendex directamente y guarda libros y autores en el `localStorage` del visitante: los datos solo existen en ese navegador y se eliminan con el boton "Borrar datos locales".
+
+Sigue la misma arquitectura en modulos ES sin dependencias ni paso de build:
+
+```
+site/src/domain/        Autor, Libro y errores
+site/src/application/   ImportarLibro y ConsultarCatalogo
+site/src/adapters/      cliente de Gutendex, repositorios en localStorage e interfaz
+```
+
+Las pruebas viven aparte, en `site-tests/`, para que `site/` solo contenga lo que se publica. Requiere Node 22.12 o superior.
+
+```bash
+cd site-tests
+npm ci
+npm run test:unit                      # dominio, casos de uso, Gutendex y persistencia con node --test
+npx playwright install chromium
+npm run test:e2e                       # Playwright con Gutendex simulado
+npm run servir                         # http://127.0.0.1:4173/Literalura/
+```
+
 ## Integracion continua
 
-En cada push hay cuatro checks: `unit`, `database`, `integration` y `e2e`. El job `e2e` levanta la aplicacion, PostgreSQL y WireMock. GitHub Pages se publica solo en `main`, y solo si esos cuatro checks pasaron.
+En cada push hay cinco checks: `unit`, `database`, `integration`, `e2e` y `site`. El job `e2e` levanta la aplicacion, PostgreSQL y WireMock; `site` ejecuta las pruebas de la demo del navegador. GitHub Pages se publica solo en `main`, y solo si esos cinco checks pasaron.
 
-Para que un pull request hacia `main` no se pueda mezclar con checks en rojo, el repositorio debe exigir `unit`, `database`, `integration` y `e2e` como status checks obligatorios.
+Para que un pull request hacia `main` no se pueda mezclar con checks en rojo, el repositorio debe exigir `unit`, `database`, `integration`, `e2e` y `site` como status checks obligatorios.
