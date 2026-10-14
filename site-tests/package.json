@@ -1,0 +1,17 @@
+{
+  "name": "literalura-site-tests",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test \"unit/**/*.test.js\"",
+    "test:e2e": "playwright test",
+    "servir": "node servidor-estatico.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0"
+  }
+}
