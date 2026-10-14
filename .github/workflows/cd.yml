@@ -7,6 +7,19 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Las ejecuciones que pueden desplegar comparten una cola y corren enteras en
+# orden. Las que verificar va a omitir (CI fallido o cancelado, otra rama)
+# usan un grupo propio para no reemplazar un despliegue pendiente.
+concurrency:
+  group: >-
+    ${{ ((github.event_name == 'workflow_run'
+          && github.event.workflow_run.conclusion == 'success'
+          && github.event.workflow_run.event == 'push')
+        || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
+      && 'cd'
+      || format('cd-omitido-{0}', github.run_id) }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
@@ -69,11 +82,6 @@ jobs:
     name: pages
     needs: artefacto-pages
     runs-on: ubuntu-latest
-    # A nivel de job: una ejecucion de CD cuyo verificar se omitio (CI fallido
-    # o cancelado) no entra a la cola ni reemplaza un despliegue pendiente.
-    concurrency:
-      group: cd-pages
-      cancel-in-progress: false
     permissions:
       pages: write
       id-token: write

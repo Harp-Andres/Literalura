@@ -155,7 +155,7 @@ Hay dos workflows: CI prueba y CD publica. CD nunca vuelve a correr las pruebas;
 | `artefacto-pages` | Hace checkout de ese commit, repite la verificacion de `site/` y lo sube como artefacto de Pages |
 | `pages` | Publica ese artefacto en GitHub Pages (entorno `github-pages`) |
 
-`verificar` solo deja pasar una ejecucion de CI que termino en exito, que fue disparada por un push a `main` y que viene de este repositorio. Una ejecucion fallida o cancelada, o una de otra rama o de un pull request, no despliega nada. `pages` tiene su propia cola de concurrencia: un despliegue nuevo espera al que esta en curso sin interrumpirlo, y una ejecucion que `verificar` descarto no entra a la cola.
+`verificar` solo deja pasar una ejecucion de CI que termino en exito, que fue disparada por un push a `main` y que viene de este repositorio. Una ejecucion fallida o cancelada, o una de otra rama o de un pull request, no despliega nada. Las ejecuciones que pueden desplegar comparten una cola de concurrencia y corren enteras, de `verificar` a `pages`, en el orden en que se dispararon: una nueva espera a la que esta en curso sin interrumpirla, asi que un commit viejo nunca pisa uno mas nuevo. Las que `verificar` va a descartar quedan fuera de esa cola y no reemplazan un despliegue pendiente.
 
 Subir y publicar van en jobs separados porque `deploy-pages` a veces no encuentra un artefacto subido una fraccion de segundo antes en el mismo job. Si `pages` falla, se puede usar "Re-run failed jobs": reutiliza el artefacto ya subido. "Re-run all jobs" sube un segundo artefacto con el mismo nombre y `deploy-pages` falla; en ese caso conviene lanzar CD a mano sobre `main`.
 
